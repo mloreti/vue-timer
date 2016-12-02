@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Timer</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,600" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+
+    <div class="timer">
+
+      <div class="time">
+        <div class="digit">
+          {{pad(minutes)}}
+        </div>
+        <div class="text">
+          minutes
+        </div>
+        <div class="adjustments">
+          <div @click="removeMinute" class="button">
+            <i class="fa fa-minus-circle minus" aria-hidden="true"></i>
+          </div>
+
+          <div @click="addMinute" class="button">
+            <i class="fa fa-plus-circle add" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="time">
+        <div class="digit">
+          {{pad(seconds)}}
+        </div>
+        <div class="text">
+          seconds
+        </div>
+        <div class="adjustments">
+          <div @click="removeSeconds" class="button">
+            <i class="fa fa-minus-circle minus" aria-hidden="true"></i>
+          </div>
+
+          <div @click="addSeconds" class="button">
+            <i class="fa fa-plus-circle add" aria-hidden="true"></i>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="controls">
+      <div v-if="! started" @click="start" class="button start">
+        <i class="fa fa-play" aria-hidden="true"></i> Start
+      </div>
+      <div v-else @click="pause" class="button pause">
+        <i class="fa fa-pause" aria-hidden="true"></i> Pause
+      </div>
+
+      <div @click="resetTime" class="button reset">
+        reset
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var App = new Vue({
+      el: '#app',
+      data: {
+        started: false,
+        finished: false,
+        minutes: 0,
+        seconds: 3,
+        now: Math.trunc((new Date()).getTime() / 1000)
+      },
+      updated: function() {
+        document.title = this.timeString();
+      },
+      methods: {
+        start: function() {
+          this.started = ! this.started;
+          this.finished = false;
+          this.timer();
+        },
+        pause: function() {
+          this.started = ! this.started;
+          window.clearInterval(this.startTimer);
+        },
+        timer: function() {
+          let that = this;
+          this.startTimer = setInterval(function () {
+            if (that.timerDone()) {
+              that.done();
+            }else {
+              that.calcTime()
+            }
+          }, 1000);
+        },
+        timeString: function() {
+          return `${this.pad(this.minutes)}:${this.pad(this.seconds)}`
+        },
+        pad(num) {
+          return num < 10 ? `0${num}` : num
+        },
+        calcTime: function() {
+          if (this.minutes > 0 && this.seconds == 0) { this.minutes -= 1 }
+          if (this.seconds - 1 < 0) { this.seconds = 60 }
+          this.seconds -= 1;
+        },
+        timerDone: function() {
+          return (this.minutes == 0 && this.seconds == 0);
+        },
+        done: function() {
+          alert("Switch");
+          this.pause();
+          this.minutes = 15;
+          this.seconds = 0;
+          this.finished = true;
+        },
+        addMinute: function() {
+          this.minutes += 1;
+        },
+        removeMinute: function() {
+          if (this.minutes > 0){
+            this.minutes -= 1;
+          }
+        },
+        addSeconds: function() {
+          if (this.seconds + 15 > 59) {
+            this.minutes += 1;
+            this.seconds = (this.seconds + 15) % 60
+          } else {
+            this.seconds += 15;
+          }
+        },
+        removeSeconds: function() {
+          if (this.seconds - 15 <= 0 && this.minutes > 0) {
+            if (this.seconds == 15){
+              this.seconds = 0;
+            } else {
+              this.minutes -= 1;
+              this.seconds = 60 - Math.abs(this.seconds - 15)
+            }
+          } else if (this.seconds - 15 > 0) {
+            this.seconds -= 15;
+          }
+        },
+        resetTime: function() {
+          this.seconds = 0;
+          this.minutes = 15;
+        }
+      }
+    })
+  </script>
+</body>
+</html>
